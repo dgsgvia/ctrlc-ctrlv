@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin | Learning UT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <img src="/Logo.jpg" alt="Logo" class="h-10 w-10 rounded-full">
+                    <span class="ml-3 text-xl font-bold text-gray-800">Learning UT - Admin</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="userName" class="text-gray-700 font-medium"></span>
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Dashboard de Administrador</h1>
+                <p class="text-gray-600 mt-2">Panel de control completo de la plataforma</p>
+            </div>
+        </div>
+
+        <div id="statsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500">Total Usuarios</h3>
+                <p id="totalUsers" class="text-3xl font-bold text-purple-600 mt-2">-</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500">Total Cursos</h3>
+                <p id="totalCourses" class="text-3xl font-bold text-purple-600 mt-2">-</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500">Total Inscripciones</h3>
+                <p id="totalEnrollments" class="text-3xl font-bold text-purple-600 mt-2">-</p>
+            </div>
+        </div>
+
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+                <button id="tabCourses" class="tab-btn border-b-2 border-purple-600 text-purple-600 py-4 px-1 font-medium text-sm">
+                    Gestión de Cursos
+                </button>
+                <button id="tabUsers" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 font-medium text-sm">
+                    Gestión de Usuarios
+                </button>
+                <button id="tabCategories" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 font-medium text-sm">
+                    Gestión de Categorías
+                </button>
+                <button id="tabStats" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 font-medium text-sm">
+                    Estadísticas
+                </button>
+            </nav>
+        </div>
+
+        <div id="coursesSection" class="tab-content active">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Todos los Cursos</h2>
+                    <button id="createCourseBtn">
+                    </button>
+                </div>
+                <div id="coursesList" class="space-y-4">
+                    <p class="text-gray-500">Cargando cursos...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="usersSection" class="tab-content">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Todos los Usuarios</h2>
+                    <input type="text" id="searchUsers">
+                </div>
+                <div id="usersList" class="space-y-3">
+                    <p class="text-gray-500">Cargando usuarios...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="categoriesSection" class="tab-content">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Todas las Categorías</h2>
+                        <p class="text-sm text-gray-600">Gestiona las categorías de cursos</p>
+                    </div>
+                    <button id="createCategoryBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        + Crear Categoría
+                    </button>
+                </div>
+
+                <div id="categoriesList" class="space-y-3">
+                    <p class="text-gray-500">Cargando categorías...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="statsSection" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Usuarios por Rol</h2>
+                    <div id="usersByRole" class="space-y-3">
+                        <p class="text-gray-500">Cargando...</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Usuarios Recientes</h2>
+                    <div id="recentUsers" class="space-y-3">
+                        <p class="text-gray-500">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="createCategoryModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800">Crear Categoría</h2>
+            </div>
+            <form id="createCategoryForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Categoría *</label>
+                    <input type="text" id="categoryName" required placeholder="Ej: Programación, Marketing, etc." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition">
+                        Crear
+                    </button>
+                    <button type="button" id="cancelCreateCategoryBtn" class="flex-1 px-6 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editCategoryModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800">Editar Categoría</h2>
+            </div>
+            <form id="editCategoryForm" class="p-6 space-y-4">
+                <input type="hidden" id="editCategoryId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Categoría *</label>
+                    <input type="text" id="editCategoryName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition">
+                        Guardar
+                    </button>
+                    <button type="button" id="cancelEditCategoryBtn" class="flex-1 px-6 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const userRole = localStorage.getItem('userRole');
+        
+        if (!token || userRole !== 'admin') {
+            window.location.href = '/login';
+        }
+
+        document.getElementById('userName').textContent = localStorage.getItem('userName') || 'Admin';
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.clear();
+            window.location.href = '/login';
+        });
+
+        document.getElementById('tabCourses').addEventListener('click', () => {
+            switchTab('courses');
+            loadAllCourses();
+        });
+        document.getElementById('tabUsers').addEventListener('click', () => switchTab('users'));
+        document.getElementById('tabCategories').addEventListener('click', () => {
+            switchTab('categories');
+            loadCategories();
+        });
+        document.getElementById('tabStats').addEventListener('click', () => switchTab('stats'));
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            
+            const tabMap = {
+                'courses': 'coursesSection',
+                'users': 'usersSection',
+                'categories': 'categoriesSection',
+                'stats': 'statsSection'
+            };
+            
+            const section = document.getElementById(tabMap[tabName]);
+            if (section) section.classList.add('active');
+            
+            if (tabName === 'users') {
+                loadUsers();
+            } else if (tabName === 'courses') {
+                loadAllCourses();
+            } else if (tabName === 'categories') {
+                loadCategories();
+            }
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-purple-600', 'text-purple-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            const activeBtn = document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+            if (activeBtn) {
+                activeBtn.classList.add('border-purple-600', 'text-purple-600');
+                activeBtn.classList.remove('border-transparent', 'text-gray-500');
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/dashboard/admin', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load dashboard');
+
+                const data = await response.json();
+                displayStats(data.stats);
+                displayRecentUsers(data.recentUsers);
+                loadAllCourses();
+            } catch (error) {
+                console.error('[v0] Error loading dashboard:', error);
+            }
+        }
+
+        function displayStats(stats) {
+            const totalUsers = stats.users.reduce((sum, role) => sum + parseInt(role.count), 0);
+            document.getElementById('totalUsers').textContent = totalUsers;
+
+            document.getElementById('totalCourses').textContent = stats.courses.total_courses || 0;
+
+            document.getElementById('totalEnrollments').textContent = stats.enrollments.total_enrollments || 0;
+
+            const roleLabels = {
+                'student': 'Estudiantes',
+                'instructor': 'Maestros',
+                'admin': 'Administradores'
+            };
+
+            document.getElementById('usersByRole').innerHTML = stats.users.map(role => `
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span class="font-medium text-gray-700">${roleLabels[role.role] || role.role}</span>
+                    <span class="text-2xl font-bold text-purple-600">${role.count}</span>
+                </div>
+            `).join('');
+        }
+
+        function displayRecentUsers(users) {
+            document.getElementById('recentUsers').innerHTML = users.map(user => `
+                <div class="flex justify-between items-center p-3 border-b border-gray-100">
+                    <div>
+                        <p class="font-medium text-gray-800">${user.first_name} ${user.last_name}</p>
+                        <p class="text-sm text-gray-500">${user.email}</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                        user.role === 'admin' ? 'bg-red-100 text-red-800' :
+                        user.role === 'instructor' ? 'bg-green-100 text-green-800' :
+                        'bg-blue-100 text-blue-800'
+                    }">
+                        ${user.role}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        async function loadAllCourses() {
+            try {
+                const response = await fetch('/api/courses', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load courses');
+
+                const data = await response.json();
+                displayCourses(data.courses);
+            } catch (error) {
+                console.error('[v0] Error loading courses:', error);
+                document.getElementById('coursesList').innerHTML = 
+                    '<p class="text-red-500">Error al cargar los cursos</p>';
+            }
+        }
+
+        function displayCourses(courses) {
+            const coursesList = document.getElementById('coursesList');
+            
+            if (courses.length === 0) {
+                coursesList.innerHTML = '<p class="text-gray-500">No hay cursos en el sistema.</p>';
+                return;
+            }
+
+            coursesList.innerHTML = courses.map(course => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg text-gray-800">${course.title}</h3>
+                            <p class="text-sm text-gray-600 mt-1">${course.description || 'Sin descripción'}</p>
+                            <p class="text-xs text-gray-500 mt-2">Instructor: ${course.instructor_first_name} ${course.instructor_last_name}</p>
+                        </div>
+                        <span class="ml-4 px-3 py-1 rounded-full text-xs font-semibold ${
+                            course.is_published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }">
+                            ${course.is_published ? 'Publicado' : 'Borrador'}
+                        </span>
+                    </div>
+                    <div class="mt-3 flex items-center gap-4 text-sm text-gray-600">
+                        <span>${course.enrolled_students || 0} estudiantes</span>
+                        <span>${course.level || 'N/A'}</span>
+                        <span>${course.category || 'Sin categoría'}</span>
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="editCourse(${course.id})" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition">
+                            Editar
+                        </button>
+                        <button onclick="deleteCourse(${course.id}, '${course.title}')" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition">
+                            Borrar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users/all', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.log('[v0] Admin users endpoint not available, trying alternative');
+                    loadAllUsersFromDashboard();
+                    return;
+                }
+
+                const data = await response.json();
+                displayUsers(data.users);
+            } catch (error) {
+                console.error('[v0] Error loading users:', error);
+                loadAllUsersFromDashboard();
+            }
+        }
+
+        async function loadAllUsersFromDashboard() {
+            try {
+                const response = await fetch('/api/dashboard/admin', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load dashboard');
+
+                const data = await response.json();
+                if (data.recentUsers) {
+                    displayUsers(data.recentUsers);
+                }
+            } catch (error) {
+                console.error('[v0] Error loading dashboard users:', error);
+                document.getElementById('usersList').innerHTML = 
+                    '<p class="text-red-500">Error al cargar los usuarios</p>';
+            }
+        }
+
+        function displayUsers(users) {
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<p class="text-gray-500">No hay usuarios en el sistema.</p>';
+                return;
+            }
+
+            const roleLabels = {
+                'student': 'Estudiante',
+                'instructor': 'Maestro',
+                'admin': 'Administrador'
+            };
+
+            usersList.innerHTML = `
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-gray-200">
+                            <th class="text-left p-3 font-semibold text-gray-700">Nombre</th>
+                            <th class="text-left p-3 font-semibold text-gray-700">Email</th>
+                            <th class="text-left p-3 font-semibold text-gray-700">Empleado ID</th>
+                            <th class="text-left p-3 font-semibold text-gray-700">Rol</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="p-3 text-gray-800">${user.first_name} ${user.last_name}</td>
+                                <td class="p-3 text-gray-600">${user.email}</td>
+                                <td class="p-3 text-gray-600">${user.employee_id || 'N/A'}</td>
+                                <td class="p-3">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                                        user.role === 'admin' ? 'bg-red-100 text-red-800' :
+                                        user.role === 'instructor' ? 'bg-green-100 text-green-800' :
+                                        'bg-blue-100 text-blue-800'
+                                    }">
+                                        ${roleLabels[user.role] || user.role}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.editCourse = function(courseId) {
+            window.location.href = `/dashboard/instructor`;
+        };
+
+        window.deleteCourse = async function(courseId, courseTitle) {
+            if (!confirm(`¿Estás seguro de que deseas borrar el curso "${courseTitle}"? Esta acción eliminará el curso de todos los estudiantes e instructores.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/courses/${courseId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Curso eliminado exitosamente');
+                    loadAllCourses();
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo eliminar el curso'));
+                }
+            } catch (error) {
+                console.error('[v0] Error deleting course:', error);
+                alert('Error al eliminar el curso');
+            }
+        };
+
+        window.deleteUser = async function(userId, userName, userRole) {
+            const roleText = userRole === 'instructor' ? 'instructor' : 'estudiante';
+            
+            if (!confirm(`¿Estás seguro de que deseas eliminar al ${roleText} "${userName}"? Esta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Usuario eliminado exitosamente');
+                    loadAllUsers();
+                    loadDashboard(); 
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo eliminar el usuario'));
+                }
+            } catch (error) {
+                console.error('[v0] Error deleting user:', error);
+                alert('Error al eliminar el usuario');
+            }
+        };
+
+
+        document.getElementById('searchUsers').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const users = document.querySelectorAll('#usersList > tr');
+            
+            users.forEach(user => {
+                const text = user.textContent.toLowerCase();
+                user.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('createCategoryBtn').addEventListener('click', () => {
+            document.getElementById('createCategoryModal').classList.add('active');
+            document.getElementById('categoryName').value = '';
+        });
+
+        document.getElementById('cancelCreateCategoryBtn').addEventListener('click', () => {
+            document.getElementById('createCategoryModal').classList.remove('active');
+        });
+
+        document.getElementById('createCategoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('categoryName').value.trim();
+
+            if (!name) {
+                alert('Por favor ingresa un nombre para la categoría');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/categories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Categoría creada exitosamente');
+                    document.getElementById('createCategoryModal').classList.remove('active');
+                    loadCategories();
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo crear la categoría'));
+                }
+            } catch (error) {
+                console.error('[v0] Error creating category:', error);
+                alert('Error al crear la categoría');
+            }
+        });
+
+        document.getElementById('cancelEditCategoryBtn').addEventListener('click', () => {
+            document.getElementById('editCategoryModal').classList.remove('active');
+        });
+
+        document.getElementById('editCategoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editCategoryId').value;
+            const name = document.getElementById('editCategoryName').value.trim();
+
+            if (!name) {
+                alert('Por favor ingresa un nombre para la categoría');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/categories/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Categoría actualizada exitosamente');
+                    document.getElementById('editCategoryModal').classList.remove('active');
+                    loadCategories();
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo actualizar la categoría'));
+                }
+            } catch (error) {
+                console.error('[v0] Error updating category:', error);
+                alert('Error al actualizar la categoría');
+            }
+        });
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/admin/categories', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load categories');
+
+                const data = await response.json();
+                displayCategories(data.categories);
+            } catch (error) {
+                console.error('[v0] Error loading categories:', error);
+                document.getElementById('categoriesList').innerHTML = 
+                    '<p class="text-red-500">Error al cargar las categorías</p>';
+            }
+        }
+
+        function displayCategories(categories) {
+            const list = document.getElementById('categoriesList');
+            
+            if (categories.length === 0) {
+                list.innerHTML = '<p class="text-gray-500">No hay categorías creadas. Crea una nueva para comenzar.</p>';
+                return;
+            }
+
+            list.innerHTML = categories.map(cat => `
+                <div class="border border-gray-200 rounded-lg p-4 flex justify-between items-center hover:bg-gray-50">
+                    <div>
+                        <h3 class="font-bold text-gray-800">${cat.name}</h3>
+                        <p class="text-sm text-gray-600">${cat.course_count} curso${cat.course_count !== 1 ? 's' : ''} asignado${cat.course_count !== 1 ? 's' : ''}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editCategory(${cat.id}, '${cat.name}')" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition">
+                            Editar
+                        </button>
+                        <button onclick="deleteCategory(${cat.id}, '${cat.name}')" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition">
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.editCategory = function(id, name) {
+            document.getElementById('editCategoryId').value = id;
+            document.getElementById('editCategoryName').value = name;
+            document.getElementById('editCategoryModal').classList.add('active');
+        };
+
+        window.deleteCategory = async function(id, name) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar la categoría "${name}"? Se eliminarán todos los cursos asociados.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/categories/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Categoría eliminada exitosamente');
+                    loadCategories();
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo eliminar la categoría'));
+                }
+            } catch (error) {
+                console.error('[v0] Error deleting category:', error);
+                alert('Error al eliminar la categoría');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            loadUsers();
+        });
+    </script>
+    <script src="js/authState.js"></script>
+</body>
+</html>

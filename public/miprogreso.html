@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Mi Progreso</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f7f8fc; 
+            color: #333;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .active-link {
+            color: #8A2BE2 !important; 
+            border-bottom: 2px solid #8A2BE2 !important; 
+            font-weight: 600 !important;
+        }
+
+        .dashboard-content {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .welcome-section {
+            margin-bottom: 30px;
+        }
+
+        .welcome-section h2 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .welcome-section p {
+            font-size: 1em;
+            color: #666;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-icon-top {
+            text-align: right;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            color: #8A2BE2;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 800;
+            color: #333;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .stat-detail {
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .stat-detail.green {
+            color: #28a745;
+        }
+
+        .stat-detail.purple {
+            color: #8A2BE2;
+        }
+
+        .hidden-detail {
+            color: #bbb;
+        }
+
+        .main-layout {
+            display: flex;
+            gap: 30px;
+        }
+
+        .left-column {
+            flex: 3;
+        }
+
+        .right-column {
+            flex: 1.2;
+        }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .view-all {
+            font-size: 0.9em;
+            color: #8A2BE2;
+        }
+
+        .course-grid-continue {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .continue-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .image-container {
+            position: relative;
+            height: 150px;
+        }
+
+        .course-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tag {
+            position: absolute;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: 600;
+            color: white;
+            top: 10px;
+        }
+
+        .tag-intermedio {
+            background-color: #f7a016; 
+            right: 70px;
+        }
+
+        .tag-liderazgo {
+            background-color: #8A2BE2;
+            right: 10px;
+        }
+
+        .tag-avanzado {
+            background-color: #007bff;
+            right: 10px;
+        }
+
+        .tag-tecnologia {
+            background-color: #333;
+            right: 100px;
+        }
+
+        .course-details {
+            padding: 15px;
+        }
+
+        .card-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-description {
+            font-size: 0.85em;
+            color: #777;
+            line-height: 1.4;
+        }
+
+        .sidebar-box {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .activity-item {
+            display: grid;
+            grid-template-columns: 1fr 100px auto;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .activity-name {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .progress-bar-container {
+            background-color: #eee;
+            height: 5px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        .purple-bar {
+            background-color: #8A2BE2;
+        }
+
+        .activity-time {
+            font-size: 0.75em;
+            color: #aaa;
+            text-align: right;
+        }
+
+        .learning-path .sidebar-title {
+            color: #8A2BE2;
+        }
+
+        .path-description {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .main-layout {
+                flex-direction: column;
+            }
+            .left-column, .right-column {
+                flex: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .course-grid-continue {
+                grid-template-columns: 1fr;
+            }
+            .dashboard-content {
+                padding: 15px;
+            }
+             .header-left, .header-right {
+                width: 100%;
+                justify-content: space-between;
+             }
+        }
+    </style>
+</head>
+<body>
+
+<header class="flex flex-col md:flex-row justify-between items-center px-4 md:px-12 h-auto md:h-20 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+    <div class="flex items-center gap-6 md:gap-8 w-full md:w-auto py-3 md:py-0">
+        <a href="index.html" class="flex items-center gap-2">
+            <img src="lu.jpg" alt="Logo LU" class="h-10 w-auto rounded-full">
+            <span class="text-xl font-bold text-gray-800 hidden sm:inline">Learning UT</span> 
+        </a>
+        
+        <nav id="main-nav" class="hidden md:flex gap-6">
+            <a href="index.html" class="text-gray-600 font-medium hover:text-primary-purple border-b-2 border-transparent hover:border-primary-purple pb-1 transition duration-300" id="nav-inicio-desktop">Inicio</a>
+            <a href="courses.html" class="text-gray-600 font-medium hover:text-primary-purple border-b-2 border-transparent hover:border-primary-purple pb-1 transition duration-300" id="nav-cursos-desktop">Cursos</a>
+            <a id="nav-miprogreso-desktop" href="miprogreso.html" class="hidden text-gray-600 font-medium hover:text-primary-purple border-b-2 border-transparent hover:border-primary-purple pb-1 transition duration-300 active-link">Mi Progreso</a>
+            <a href="sobrenosotros.html" class="text-gray-600 font-medium hover:text-primary-purple border-b-2 border-transparent hover:border-primary-purple pb-1 transition duration-300" id="nav-sobrenosotros-desktop">Sobre Nosotros</a>
+        </nav>
+    </div>
+
+    <div class="flex items-center gap-4 w-full md:w-auto pb-3 md:pb-0">
+        <div class="relative flex items-center bg-gray-100 rounded-lg px-3 py-2 flex-grow">
+            <input type="text" placeholder="Buscar cursos..." class="bg-transparent text-sm w-full outline-none placeholder-gray-500">
+            <span class="text-gray-400">🔍</span>
+        </div>
+        
+        <div class="flex gap-4 text-xl">
+            
+            <div id="profile-container" class="flex flex-col items-center justify-center relative">
+                <a id="nav-user-icon" href="formulario.html" class="text-gray-600 hover:text-primary-purple transition duration-200" title="Mi Cuenta">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </a>
+                <span id="nav-username" class="hidden text-xs font-medium text-primary-purple absolute top-full mt-1 whitespace-nowrap"></span>
+            </div>
+            
+            <div id="logout-button-container">
+                </div>
+        </div>
+    </div>
+    
+    <nav id="mobile-nav" class="md:hidden flex w-full justify-around mt-3 border-t pt-3">
+        <a href="index.html" class="text-sm text-gray-600 font-medium hover:text-primary-purple">Inicio</a>
+        <a href="courses.html" class="text-sm text-gray-600 font-medium hover:text-primary-purple">Cursos</a>
+        <a id="nav-miprogreso-mobile" href="miprogreso.html" class="hidden text-sm text-gray-600 font-medium hover:text-primary-purple">Mi Progreso</a>
+        <a href="sobrenosotros.html" class="text-sm text-gray-600 font-medium hover:text-primary-purple">Sobre Nosotros</a>
+    </nav>
+</header>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuepbJiMjP4koAQ3POWvQYfSgmh2zS4ys",
+        authDomain: "learning-ut-e8373.firebaseapp.com",
+        projectId: "learning-ut-e8373",
+        storageBucket: "learning-ut-e8373.firebasestorage.app",
+        messagingSenderId: "174948578389",
+        appId: "1:174948578389:web:55bbdce4fea3bfafc410dc",
+        measurementId: "G-Y1GN237W5X"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    async function logout() {
+        try {
+            await signOut(auth);
+            window.location.href = 'formulario.html'; 
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+        }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        const logoutButtonContainer = document.getElementById('logout-button-container');
+        const navUsername = document.getElementById('nav-username');
+        const navUserIcon = document.getElementById('nav-user-icon');
+
+        if (!user) {
+            window.location.href = 'formulario.html'; 
+        } else {
+            const userName = user.displayName || user.email.split('@')[0];
+            const firstName = userName.split(' ')[0];
+            
+            const welcomeTitle = document.getElementById('welcome-title');
+            if (welcomeTitle) {
+                welcomeTitle.textContent = `¡Bienvenido de vuelta, ${userName}!`;
+            }
+
+            if (navUsername) {
+                navUsername.textContent = firstName;
+                navUsername.classList.remove('hidden');
+            }
+            if (navUserIcon) {
+                navUserIcon.href = "miprogreso.html";
+                navUserIcon.title = "Mi Progreso";
+            }
+            
+            if (logoutButtonContainer) {
+                logoutButtonContainer.innerHTML = `
+                    <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 text-sm rounded transition duration-200 ml-4">
+                        Cerrar Sesión
+                    </button>
+                `;
+                document.getElementById('logout-btn').addEventListener('click', logout);
+            }
+        }
+    });
+</script>
+
+
+<script>
+    function updateHeaderForAuthState() {
+        const isLoggedIn = true; 
+        
+        const navMiProgresoDesktop = document.getElementById('nav-miprogreso-desktop');
+        const navMiProgresoMobile = document.getElementById('nav-miprogreso-mobile');
+
+        function removeActiveClasses() {
+             document.querySelectorAll('#main-nav a').forEach(link => {
+                link.classList.remove('active-link');
+            });
+        }
+        
+        if (isLoggedIn) {
+            navMiProgresoDesktop && navMiProgresoDesktop.classList.remove('hidden');
+            navMiProgresoMobile && navMiProgresoMobile.classList.remove('hidden');
+            
+            removeActiveClasses();
+            navMiProgresoDesktop && navMiProgresoDesktop.classList.add('active-link');
+        } 
+    }
+    
+    window.addEventListener('load', updateHeaderForAuthState);
+</script>
+
+    <main class="dashboard-content">
+        <div class="welcome-section">
+            <h2 id="welcome-title">¡Bienvenido de vuelta!</h2> 
+            <p>Continúa tu desarrollo profesional con nuestros cursos</p>
+        </div>
+
+        <div class="stats-grid">
+            
+            <div class="stat-card">
+                <div class="stat-icon-top">
+                    <span class="stat-icon">📖</span>
+                </div>
+                <h3 class="stat-value">12</h3>
+                <p class="stat-label">Cursos Activos</p>
+                <p class="stat-detail green">+8% vs mes anterior</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-top">
+                    <span class="stat-icon">⏳</span>
+                </div>
+                <h3 class="stat-value">48h</h3>
+                <p class="stat-label">Horas Completadas</p>
+                <p class="stat-detail green">+12% vs mes anterior</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-top">
+                    <span class="stat-icon">🏅</span>
+                </div>
+                <h3 class="stat-value">7</h3>
+                <p class="stat-label">Certificaciones</p>
+                <p class="stat-detail hidden-detail">Obtenidas</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-top">
+                    <span class="stat-icon">📈</span>
+                </div>
+                <h3 class="stat-value">73%</h3>
+                <p class="stat-label">Progreso General</p>
+                <p class="stat-detail purple">+5% vs mes anterior</p>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            
+            <div class="left-column">
+                <div class="section-header-row">
+                    <h3 class="section-title">Continuar Aprendiendo</h3>
+                    <a href="#" class="view-all">Ver Todos</a>
+                </div>
+
+                <div class="course-grid-continue">
+                    <div class="continue-card">
+                        <div class="image-container">
+                            <img src="https://placehold.co/400x150/8A2BE2/ffffff?text=LIDERAZGO" alt="Liderazgo Digital" class="course-thumb">
+                            <span class="tag tag-intermedio">Intermedio</span>
+                            <span class="tag tag-liderazgo">Liderazgo</span>
+                        </div>
+                        <div class="course-details">
+                            <h4 class="card-title">Liderazgo Digital</h4>
+                            <p class="card-description">Desarrolla habilidades de liderazgo en entornos digitales</p>
+                        </div>
+                    </div>
+                    
+                    <div class="continue-card">
+                        <div class="image-container">
+                            <img src="https://placehold.co/400x150/4A148C/ffffff?text=ANALISIS" alt="Análisis de Datos" class="course-thumb">
+                            <span class="tag tag-avanzado">Avanzado</span>
+                            <span class="tag tag-tecnologia">Tecnología</span>
+                        </div>
+                        <div class="course-details">
+                            <h4 class="card-title">Análisis de Datos</h4>
+                            <p class="card-description">Aprende a interpretar y visualizar datos para tomar decisiones estratégicas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                
+                <div class="sidebar-box recent-activity">
+                    <h4 class="sidebar-title">▷ Actividad Reciente</h4>
+                    <div class="activity-item">
+                        <p class="activity-name">Liderazgo Digital</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar purple-bar" style="width: 75%;"></div>
+                        </div>
+                        <span class="activity-time">2h ago</span>
+                    </div>
+                    <div class="activity-item">
+                        <p class="activity-name">Marketing Estratégico</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar purple-bar" style="width: 90%;"></div>
+                        </div>
+                        <span class="activity-time">1d ago</span>
+                    </div>
+                    <div class="activity-item">
+                        <p class="activity-name">Análisis de Datos</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar purple-bar" style="width: 40%;"></div>
+                        </div>
+                        <span class="activity-time">3d ago</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-box learning-path">
+                    <h4 class="sidebar-title">🎓 Ruta de Aprendizaje</h4>
+                    <p class="path-description">Especialización en Liderazgo Digital</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/authState.js"></script>
+</body>
+</html>

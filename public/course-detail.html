@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Curso - Learning UT</title>
+    <link rel="stylesheet" href="/index.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .header-nav {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-nav .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+            text-decoration: none;
+        }
+
+        .header-nav .logo img {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+        }
+
+        .header-nav .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .header-nav .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .header-nav .nav-links a:hover {
+            color: #2563eb;
+        }
+
+        .header-nav .nav-links .btn-login {
+            background: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
+
+        .header-nav .nav-links .btn-login:hover {
+            background: #1d4ed8;
+        }
+
+        .course-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .course-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .course-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .course-meta-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+
+        .course-body {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .course-main {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .course-sidebar {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #111827;
+        }
+
+        .course-description {
+            line-height: 1.6;
+            color: #374151;
+            margin-bottom: 2rem;
+        }
+
+        .lessons-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .lesson-item {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .lesson-item:hover {
+            background: #f9fafb;
+        }
+
+        .lesson-info h4 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .lesson-info p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .lesson-duration {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .instructor-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .instructor-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .instructor-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .instructor-info p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .enroll-button {
+            width: 100%;
+            padding: 1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+        }
+
+        .enroll-button:hover {
+            background: #1d4ed8;
+        }
+
+        .course-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            font-size: 1.125rem;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .course-body {
+                grid-template-columns: 1fr;
+            }
+
+            .course-sidebar {
+                position: static;
+            }
+        }
+    </style>    
+</head>
+<body>
+    <nav class="header-nav">
+        <a href="/courses" class="logo">
+            <img src="/Logo.jpg" alt="Logo LU">
+            <span>Learning UT</span>
+        </a>
+        <div class="nav-links">
+            <a href="/login" class="btn-login">Iniciar Sesión</a>
+        </div>
+    </nav>
+
+    <div class="course-detail-container">
+        <div id="courseContent">
+            <div class="loading">Cargando curso...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const courseId = window.location.pathname.split('/').pop();
+            loadCourse(courseId);
+        });
+
+        async function loadCourse(courseId) {
+            const container = document.getElementById('courseContent');
+
+            try {
+                const response = await fetch(`/api/courses/${courseId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Curso no encontrado');
+                }
+
+                const data = await response.json();
+                renderCourse(data.course);
+            } catch (error) {
+                console.error('Error loading course:', error);
+                container.innerHTML = `
+                    <div class="loading">
+                        <h2>Error al cargar el curso</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCourse(course) {
+            const container = document.getElementById('courseContent');
+            
+            const levelText = {
+                'beginner': 'Principiante',
+                'intermediate': 'Intermedio',
+                'advanced': 'Avanzado'
+            }[course.level] || course.level;
+
+            const duration = Math.round(course.duration_minutes / 60);
+            
+            const lessonsHTML = course.lessons.map((lesson, index) => {
+                const lessonDuration = lesson.duration_seconds ? `${Math.round(lesson.duration_seconds / 60)} min` : 'N/A';
+                return `
+                    <li class="lesson-item">
+                        <div class="lesson-info">
+                            <h4>${index + 1}. ${lesson.title}</h4>
+                            ${lesson.description ? `<p>${lesson.description}</p>` : ''}
+                        </div>
+                        <span class="lesson-duration">${lessonDuration}</span>
+                    </li>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="course-header">
+                    <h1 class="course-title">${course.title}</h1>
+                    <div class="course-meta-info">
+                        <span>Nivel: <span id="courseLevel">${levelText}</span></span>
+                        <span>Duración: <span id="courseDuration">${duration}</span> horas</span>
+                        <span><span id="courseEnrolled">${course.enrolled_count}</span> estudiantes inscritos</span>
+                    </div>
+                </div>
+
+                <div class="course-body">
+                    <div class="course-main">
+                        <h2 class="section-title">Descripción del curso</h2>
+                        <p class="course-description">${course.description || 'No hay descripción disponible.'}</p>
+                    </div>
+
+                    <div class="course-sidebar">
+                        <h3 class="section-title">Instructor</h3>
+                        <div class="instructor-card">
+                            
+                            <div class="instructor-avatar">
+                                <i class='bx bxs-user-circle text-7xl text-primary-purple'></i>
+                            </div>
+                            
+                            <div class="instructor-info">
+                                <h4>${course.instructor_first_name} ${course.instructor_last_name}</h4>
+                                <p>${course.instructor_position || 'Instructor'}</p>
+                            </div>
+                        </div>
+
+                        <button class="enroll-button" onclick="window.location.href='/courses'" style="background: #6b7280; margin-top: 0.5rem;">
+                            Volver al catálogo
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            setupCourseRefresh(course.id);
+        }
+
+        function setupCourseRefresh(courseId) {
+            const refreshInterval = setInterval(() => {
+                fetch(`/api/courses/${courseId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const course = data.course;
+                        const levelText = {
+                            'beginner': 'Principiante',
+                            'intermediate': 'Intermedio',
+                            'advanced': 'Avanzado'
+                        }[course.level] || course.level;
+                        const duration = Math.round(course.duration_minutes / 60);
+                        
+                        document.getElementById('courseLevel').textContent = levelText;
+                        document.getElementById('courseDuration').textContent = duration;
+                        document.getElementById('courseEnrolled').textContent = course.enrolled_count;
+                    })
+                    .catch(err => console.error('[v0] Error refreshing course:', err));
+            }, 5000);
+        }
+
+        function enrollCourse(courseId) {
+            alert('Funcionalidad de inscripción en desarrollo');
+        }
+    </script>
+    <script src="js/authState.js"></script>
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Estudiante | Learning UT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        .modal-backdrop {
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .modal-content {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-ripple:active::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            animation: ripple 0.6s ease-out;
+        }
+        
+        @keyframes ripple {
+            to {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <img src="/Logo.jpg" alt="Logo LU" class="h-10 w-auto rounded-full">
+                    <span class="ml-3 text-xl font-bold text-gray-800">Learning UT</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="userName" class="text-gray-700 font-medium"></span>
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Dashboard de Estudiante</h1>
+            <p class="text-gray-600 mt-2">Bienvenido a tu panel de aprendizaje</p>
+        </div>
+
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+                <button id="tabAssigned" class="tab-btn border-b-2 border-purple-600 text-purple-600 py-4 px-1 font-medium text-sm">
+                    Cursos Asignados
+                </button>
+                <button id="tabFinished" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 font-medium text-sm">
+                    Cursos Finalizados
+                </button>
+                <button id="tabAvailable" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 font-medium text-sm">
+                    Cursos Disponibles
+                </button>
+            </nav>
+        </div>
+
+        <div id="content" class="space-y-6">
+            <div id="assignedSection" class="tab-content">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Mis Cursos Asignados</h2>
+                    <div id="assignedCoursesList" class="space-y-4">
+                        <p class="text-gray-500">Cargando cursos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="finishedSection" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Cursos Finalizados y Aprobados</h2>
+                    <div id="finishedCoursesList" class="space-y-4">
+                        <p class="text-gray-500">Cargando cursos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="availableSection" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Cursos Disponibles para Inscripción</h2>
+                    <div id="availableCoursesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <p class="text-gray-500">Cargando cursos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="customConfirmModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop bg-black bg-opacity-40">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-6">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Confirmación</h3>
+                </div>
+            </div>
+            <div class="p-6">
+                <p id="confirmModalMessage" class="text-gray-700 text-lg leading-relaxed"></p>
+            </div>
+            <div class="px-6 pb-6 flex gap-3">
+                <button id="confirmModalCancel" class="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all duration-200 btn-ripple">
+                    Cancelar
+                </button>
+                <button id="confirmModalConfirm" class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl btn-ripple">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customAlertModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop bg-black bg-opacity-40">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+            <div id="alertModalHeader" class="p-6">
+                <div class="flex items-center gap-3">
+                    <div id="alertModalIcon" class="rounded-full p-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 id="alertModalTitle" class="text-xl font-bold"></h3>
+                </div>
+            </div>
+            <div class="px-6 pb-2">
+                <p id="alertModalMessage" class="text-gray-700 text-lg leading-relaxed"></p>
+            </div>
+            <div class="px-6 pb-6">
+                <button id="alertModalOk" class="w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl btn-ripple">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function customConfirm(message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customConfirmModal');
+                const messageEl = document.getElementById('confirmModalMessage');
+                const confirmBtn = document.getElementById('confirmModalConfirm');
+                const cancelBtn = document.getElementById('confirmModalCancel');
+                
+                messageEl.textContent = message;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                function cleanup() {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    cancelBtn.removeEventListener('click', onCancel);
+                }
+                
+                function onConfirm() {
+                    cleanup();
+                    resolve(true);
+                }
+                
+                function onCancel() {
+                    cleanup();
+                    resolve(false);
+                }
+                
+                confirmBtn.addEventListener('click', onConfirm);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+        
+        function customAlert(message, type = 'success') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customAlertModal');
+                const messageEl = document.getElementById('alertModalMessage');
+                const okBtn = document.getElementById('alertModalOk');
+                const headerEl = document.getElementById('alertModalHeader');
+                const iconEl = document.getElementById('alertModalIcon');
+                const titleEl = document.getElementById('alertModalTitle');
+                
+                messageEl.textContent = message;
+                
+                if (type === 'success') {
+                    headerEl.className = 'bg-gradient-to-r from-green-500 to-emerald-600 p-6';
+                    iconEl.className = 'bg-white bg-opacity-20 rounded-full p-3';
+                    titleEl.className = 'text-xl font-bold text-white';
+                    titleEl.textContent = '¡Éxito!';
+                    iconEl.innerHTML = '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                    okBtn.className = 'w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl btn-ripple';
+                } else if (type === 'error') {
+                    headerEl.className = 'bg-gradient-to-r from-red-500 to-rose-600 p-6';
+                    iconEl.className = 'bg-white bg-opacity-20 rounded-full p-3';
+                    titleEl.className = 'text-xl font-bold text-white';
+                    titleEl.textContent = 'Error';
+                    iconEl.innerHTML = '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                    okBtn.className = 'w-full px-6 py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl btn-ripple';
+                }
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                function cleanup() {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    okBtn.removeEventListener('click', onOk);
+                }
+                
+                function onOk() {
+                    cleanup();
+                    resolve();
+                }
+                
+                okBtn.addEventListener('click', onOk);
+            });
+        }
+
+        const token = localStorage.getItem('token');
+        const userRole = localStorage.getItem('userRole');
+        
+        if (!token || (userRole !== 'student' && userRole !== 'admin')) {
+            window.location.href = '/login';
+        }
+
+        document.getElementById('userName').textContent = localStorage.getItem('userName') || 'Usuario';
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.clear();
+            window.location.href = '/login';
+        });
+
+        document.getElementById('tabAssigned').addEventListener('click', () => {
+            switchTab('assigned');
+        });
+
+        document.getElementById('tabFinished').addEventListener('click', () => {
+            switchTab('finished');
+        });
+
+        document.getElementById('tabAvailable').addEventListener('click', () => {
+            switchTab('available');
+        });
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-purple-600', 'text-purple-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            if (tab === 'assigned') {
+                document.getElementById('tabAssigned').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('tabAssigned').classList.add('border-purple-600', 'text-purple-600');
+                document.getElementById('assignedSection').classList.remove('hidden');
+            } else if (tab === 'finished') {
+                document.getElementById('tabFinished').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('tabFinished').classList.add('border-purple-600', 'text-purple-600');
+                document.getElementById('finishedSection').classList.remove('hidden');
+            } else if (tab === 'available') {
+                document.getElementById('tabAvailable').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('tabAvailable').classList.add('border-purple-600', 'text-purple-600');
+                document.getElementById('availableSection').classList.remove('hidden');
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                console.log('[v0] Starting to load dashboard...');
+                console.log('[v0] Token:', token ? 'EXISTS' : 'MISSING');
+                
+                const response = await fetch('/api/student/courses', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                console.log('[v0] Response status:', response.status);
+                console.log('[v0] Response OK:', response.ok);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('[v0] Response error text:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('[v0] Data received:', data);
+                console.log('[v0] Assigned courses:', data.assigned);
+                console.log('[v0] Finished courses:', data.finished);
+                console.log('[v0] Available courses:', data.available);
+                
+                displayAssignedCourses(data.assigned || []);
+                displayFinishedCourses(data.finished || []);
+                displayAvailableCourses(data.available || []);
+            } catch (error) {
+                console.error('[v0] Error loading dashboard:', error);
+                console.error('[v0] Error message:', error.message);
+                console.error('[v0] Error stack:', error.stack);
+                document.getElementById('assignedCoursesList').innerHTML = 
+                    `<p class="text-red-500">Error al cargar los cursos. Verifica tu conexión.</p>`;
+            }
+        }
+
+        function displayAssignedCourses(courses) {
+            console.log('[v0] displayAssignedCourses called with:', courses);
+            console.log('[v0] Courses is array?', Array.isArray(courses));
+            console.log('[v0] Courses length:', courses?.length);
+            
+            const coursesList = document.getElementById('assignedCoursesList');
+            
+            if (!courses || courses.length === 0) {
+                coursesList.innerHTML = '<p class="text-gray-500">No tienes cursos asignados todavía.</p>';
+                return;
+            }
+
+            coursesList.innerHTML = courses.map(course => {
+                console.log('[v0] Processing course:', course);
+                const levelMap = { 'beginner': 'Principiante', 'intermediate': 'Intermedio', 'advanced': 'Avanzado' };
+                const levelText = levelMap[course.level] || course.level;
+                const duration = Math.round((course.duration_minutes || 0) / 60) || '';
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer" onclick="startCourse(${course.course_id})">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg text-gray-800">${course.title}</h3>
+                                <p class="text-sm text-gray-600 mt-1">${course.description || 'Sin descripción'}</p>
+                            </div>
+                            <span class="ml-4 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                En Curso
+                            </span>
+                        </div>
+
+                        <div class="mt-3 flex items-center justify-between">
+                            <div class="flex items-center gap-4 text-sm">
+
+                                <span class="text-gray-500 flex items-center gap-1">
+                                    <i class="bx bx-bar-chart text-base"></i>
+                                    ${levelText}
+                                </span>
+
+                                <span class="text-gray-500 flex items-center gap-1">
+                                    <i class="bx bx-user text-base"></i>
+                                    ${course.instructor_first_name} ${course.instructor_last_name}
+                                </span>
+
+                                <span class="text-gray-500">${duration}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: ${course.progress || 0}%"></div>
+                        </div>
+
+                        <div class="mt-4 flex gap-2">
+                            <button onclick="event.stopPropagation(); startCourse(${course.course_id})"
+                                class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition">
+                                Continuar Curso
+                            </button>
+
+                            <button onclick="event.stopPropagation(); viewCourseDetail(${course.course_id})"
+                                class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm font-medium transition">
+                                Más Información
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            console.log('[v0] Assigned courses HTML updated');
+        }
+
+        function displayFinishedCourses(courses) {
+            const coursesList = document.getElementById('finishedCoursesList');
+            
+            if (!courses || courses.length === 0) {
+                coursesList.innerHTML = '<p class="text-gray-500">No has completado cursos todavía.</p>';
+                return;
+            }
+
+            coursesList.innerHTML = courses.map(course => {
+                const levelMap = { 'beginner': 'Principiante', 'intermediate': 'Intermedio', 'advanced': 'Avanzado' };
+                const levelText = levelMap[course.level] || course.level;
+                const duration = Math.round((course.duration_minutes || 0) / 60) || '';
+                const scoreValue = Number(course.score);
+                const scoreDisplay = !isNaN(scoreValue) ? `${scoreValue.toFixed(1)}%` : 'N/A';
+                
+                return `
+                    <div class="border border-green-200 rounded-lg p-4 hover:shadow-md transition bg-green-50 cursor-pointer" onclick="reviewCourse(${course.course_id})">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg text-gray-800">${course.title}</h3>
+                                <p class="text-sm text-gray-600 mt-1">${course.description || 'Sin descripción'}</p>
+                            </div>
+                            <span class="ml-4 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                ✓ Aprobado
+                            </span>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between">
+                            <div class="flex items-center gap-4 text-sm">
+                                <span class="text-gray-500">${levelText}</span>
+                                <span class="text-gray-500">Calificación: ${scoreDisplay}</span>
+                                <span class="text-gray-500">${duration}</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <button onclick="event.stopPropagation(); reviewCourse(${course.course_id})" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition">
+                                Revisar Curso
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayAvailableCourses(courses) {
+            const coursesList = document.getElementById('availableCoursesList');
+            
+            if (!courses || courses.length === 0) {
+                coursesList.innerHTML = '<p class="col-span-full text-gray-500">No hay cursos disponibles en este momento.</p>';
+                return;
+            }
+
+            coursesList.innerHTML = courses.map(course => {
+                const levelMap = { 'beginner': 'Principiante', 'intermediate': 'Intermedio', 'advanced': 'Avanzado' };
+                const levelText = levelMap[course.level] || course.level;
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                        <h3 class="font-bold text-lg text-gray-800 mb-2">${course.title}</h3>
+                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">${course.description || 'Sin descripción'}</p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-500 mb-3">
+                            
+                            <span class="flex items-center gap-1">
+                                <i class='bx bx-bar-chart text-base'></i>
+                                ${levelText}
+                            </span>
+
+                            <span class="flex items-center gap-1">
+                                <i class='bx bx-user text-base'></i>
+                                ${course.instructor_first_name} ${course.instructor_last_name}
+                            </span>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="enrollInCourse(${course.id}, '${course.title}')"
+                                    class="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition">
+                                Inscribirme
+                            </button>
+                            
+                            <button onclick="viewCourseDetail(${course.id})"
+                                    class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm font-medium transition">
+                                Más Info
+                            </button>
+                        </div>
+                    </div>
+
+                `;
+            }).join('');
+        }
+
+        window.startCourse = function(courseId) {
+            window.location.href = `/course-player.html?id=${courseId}`;
+        };
+
+        window.reviewCourse = function(courseId) {
+            window.location.href = `/course-player.html?id=${courseId}`;
+        };
+
+        window.viewCourseDetail = function(courseId) {
+            window.location.href = `/courses/${courseId}`;
+        };
+
+        window.enrollInCourse = async function(courseId, courseTitle) {
+            const confirmed = await customConfirm(`¿Deseas inscribirte al curso "${courseTitle}"?`);
+            if (!confirmed) return;
+            
+            try {
+                const response = await fetch('/api/enroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ courseId })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    await customAlert('Te has inscrito exitosamente al curso', 'success');
+                    loadDashboard();
+                } else {
+                    await customAlert('Error: ' + (result.error || 'No se pudo inscribir al curso'), 'error');
+                }
+            } catch (error) {
+                console.error('Error enrolling in course:', error);
+                await customAlert('Error al inscribirte al curso', 'error');
+            }
+        };
+
+        loadDashboard();
+    </script>
+    
+    <script src="js/authState.js"></script>
+</body>
+</html>

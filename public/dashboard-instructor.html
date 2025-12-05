@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Maestro | Learning UT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <img src="/Logo.jpg" alt="Logo" class="h-10 w-10 rounded-full">
+                    <span class="ml-3 text-xl font-bold text-gray-800">Learning UT</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="userName" class="text-gray-700 font-medium"></span>
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Dashboard de Maestro</h1>
+                <p class="text-gray-600 mt-2">Gestiona tus cursos y estudiantes</p>
+            </div>
+            <button id="createCourseBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                Crear Curso Nuevo
+            </button>
+        </div>
+
+        <div id="content" class="space-y-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Mis Cursos</h2>
+                <div id="coursesList" class="space-y-4">
+                    <p class="text-gray-500">Cargando cursos...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="createCourseModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white">
+                <h2 class="text-2xl font-bold text-gray-800">Crear Curso Nuevo</h2>
+            </div>
+            <form id="createCourseForm" class="p-6 space-y-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Curso *</label>
+                        <input type="text" id="courseName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+                        <textarea id="courseDescription" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nivel *</label>
+                            <select id="courseLevel" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="Principiante">Principiante</option>
+                                <option value="Intermedio">Intermedio</option>
+                                <option value="Avanzado">Avanzado</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Duración Aproximada *</label>
+                            <input type="text" id="courseDuration" required placeholder="Ej: 4 semanas, 10 horas" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Categoría del Curso *</label>
+                        <select id="courseCategory" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">Cargando categorías...</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Link del Video del Curso *</label>
+                        <input type="url" id="courseVideoUrl" required placeholder="https://example.com/video.mp4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Quiz del Curso</h3>
+                    <div id="questionsContainer" class="space-y-6">
+                    </div>
+                    <button type="button" id="addQuestionBtn" class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition">
+                        + Agregar una Pregunta Más
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2">Mínimo 1 pregunta, máximo 10 preguntas</p>
+                </div>
+
+                <div class="flex gap-4 border-t border-gray-200 pt-6">
+                    <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition">
+                        Crear Curso
+                    </button>
+                    <button type="button" id="cancelCreateBtn" class="px-6 py-3 border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editCourseModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white">
+                <h2 class="text-2xl font-bold text-gray-800">Editar Curso</h2>
+            </div>
+            <form id="editCourseForm" class="p-6 space-y-6">
+                <input type="hidden" id="editCourseId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Curso *</label>
+                        <input type="text" id="editCourseName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+                        <textarea id="editCourseDescription" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
+                            <select id="editCourseCategory" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="">Selecciona una categoría...</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nivel *</label>
+                            <select id="editCourseLevel" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="Principiante">Principiante</option>
+                                <option value="Intermedio">Intermedio</option>
+                                <option value="Avanzado">Avanzado</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Duración Aproximada *</label>
+                        <input type="text" id="editCourseDuration" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Link del Video del Curso *</label>
+                        <input type="text" id="editCourseVideoUrl" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 border-t border-gray-200 pt-6">
+                    <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition">
+                        Guardar Cambios
+                    </button>
+                    <button type="button" id="cancelEditBtn" class="px-6 py-3 border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="assignCourseModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white">
+                <h2 class="text-2xl font-bold text-gray-800">Asignar Curso a Estudiantes</h2>
+            </div>
+            <div class="p-6">
+                <input type="hidden" id="assignCourseId">
+                <div class="mb-4">
+                    <input type="text" id="searchStudents" placeholder="Buscar estudiante..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                </div>
+                <div id="studentsList" class="space-y-2 max-h-96 overflow-y-auto">
+                    <p class="text-gray-500">Cargando estudiantes...</p>
+                </div>
+                <div class="mt-6 flex gap-4">
+                    <button id="closeAssignBtn" class="flex-1 px-6 py-3 border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="enrolledStudentsModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white">
+                <h2 class="text-2xl font-bold text-gray-800">Estudiantes Inscritos</h2>
+                <p id="enrolledCourseTitle" class="text-gray-600 mt-1"></p>
+            </div>
+            <div class="p-6">
+                <div id="enrolledStudentsList" class="space-y-3 max-h-96 overflow-y-auto">
+                    <p class="text-gray-500">Cargando estudiantes...</p>
+                </div>
+                <div class="mt-6 flex gap-4">
+                    <button id="closeEnrolledBtn" class="flex-1 px-6 py-3 border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // autenticación diego
+        const token = localStorage.getItem('token');
+        const userRole = localStorage.getItem('userRole');
+        
+        if (!token || (userRole !== 'instructor' && userRole !== 'admin')) {
+            window.location.href = '/login';
+        }
+
+        document.getElementById('userName').textContent = localStorage.getItem('userName') || 'Usuario';
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.clear();
+            window.location.href = '/login';
+        });
+
+        let questionCount = 0;
+        const MAX_QUESTIONS = 10;
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories/all', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load categories');
+
+                const data = await response.json();
+                const categorySelect = document.getElementById('courseCategory');
+                categorySelect.innerHTML = '';
+                
+                if (data.categories.length === 0) {
+                    categorySelect.innerHTML = '<option value="">No hay categorías disponibles</option>';
+                } else {
+                    data.categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.name;
+                        option.textContent = cat.name;
+                        categorySelect.appendChild(option);
+                    });
+                }
+                
+                return data.categories; // categorias diego
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                const categorySelect = document.getElementById('courseCategory');
+                categorySelect.innerHTML = '<option value="">Error al cargar categorías</option>';
+                return []; 
+            }
+        }
+
+        document.getElementById('createCourseBtn').addEventListener('click', () => {
+            document.getElementById('createCourseModal').classList.add('active');
+            questionCount = 0;
+            document.getElementById('questionsContainer').innerHTML = '';
+            addQuestion(); 
+            loadCategories(); 
+        });
+
+        document.getElementById('cancelCreateBtn').addEventListener('click', () => {
+            document.getElementById('createCourseModal').classList.remove('active');
+            document.getElementById('createCourseForm').reset();
+        });
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            document.getElementById('editCourseModal').classList.remove('active');
+        });
+
+        document.getElementById('closeAssignBtn').addEventListener('click', () => {
+            document.getElementById('assignCourseModal').classList.remove('active');
+        });
+
+        document.getElementById('closeEnrolledBtn').addEventListener('click', () => {
+            document.getElementById('enrolledStudentsModal').classList.remove('active');
+        });
+
+        document.getElementById('addQuestionBtn').addEventListener('click', addQuestion);
+
+        function addQuestion() {
+            if (questionCount >= MAX_QUESTIONS) {
+                alert('Máximo 10 preguntas permitidas');
+                return;
+            }
+            
+            questionCount++;
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'border border-gray-200 rounded-lg p-4 relative';
+            questionDiv.dataset.questionIndex = questionCount;
+            
+            questionDiv.innerHTML = `
+                <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold removeQuestionBtn" data-index="${questionCount}">
+                    × Eliminar
+                </button>
+                <div class="space-y-4">
+                    <h4 class="font-semibold text-gray-800">Pregunta ${questionCount}</h4>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Pregunta *</label>
+                        <select class="questionType w-full px-4 py-2 border border-gray-300 rounded-lg" data-index="${questionCount}" required>
+                            <option value="">Selecciona un tipo</option>
+                            <option value="multiple_choice">Opción Múltiple</option>
+                            <option value="true_false">Verdadero/Falso</option>
+                            <option value="matching">Emparejamiento</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pregunta *</label>
+                        <textarea class="questionText w-full px-4 py-2 border border-gray-300 rounded-lg" rows="2" required></textarea>
+                    </div>
+                    
+                    <div class="questionOptions" data-index="${questionCount}">
+                        <!-- Options will be added based on question type -->
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('questionsContainer').appendChild(questionDiv);
+            
+            const typeSelect = questionDiv.querySelector('.questionType');
+            typeSelect.addEventListener('change', (e) => {
+                updateQuestionOptions(e.target.dataset.index, e.target.value);
+            });
+            
+            questionDiv.querySelector('.removeQuestionBtn').addEventListener('click', () => {
+                if (questionCount <= 1) {
+                    alert('Debe haber al menos 1 pregunta');
+                    return;
+                }
+                questionDiv.remove();
+                questionCount--;
+                updateQuestionNumbers();
+            });
+        }
+
+        function updateQuestionNumbers() {
+            const questions = document.querySelectorAll('#questionsContainer > div');
+            questions.forEach((q, index) => {
+                q.querySelector('h4').textContent = `Pregunta ${index + 1}`;
+            });
+        }
+
+        function updateQuestionOptions(index, type) {
+            const optionsContainer = document.querySelector(`.questionOptions[data-index="${index}"]`);
+            
+            if (type === 'multiple_choice') {
+                optionsContainer.innerHTML = `
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-green-700 mb-1">Respuesta Correcta *</label>
+                            <input type="text" class="correctAnswer w-full px-4 py-2 border border-green-300 rounded-lg bg-green-50" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Respuesta Incorrecta 1 *</label>
+                            <input type="text" class="wrongAnswer1 w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Respuesta Incorrecta 2 *</label>
+                            <input type="text" class="wrongAnswer2 w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Respuesta Incorrecta 3 *</label>
+                            <input type="text" class="wrongAnswer3 w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'true_false') {
+                optionsContainer.innerHTML = `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Respuesta Correcta *</label>
+                        <select class="tfAnswer w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                            <option value="">Selecciona</option>
+                            <option value="true">Verdadero</option>
+                            <option value="false">Falso</option>
+                        </select>
+                    </div>
+                `;
+            } else if (type === 'matching') {
+                optionsContainer.innerHTML = `
+                    <div class="space-y-3">
+                        <p class="text-sm text-gray-600">Mínimo 3 pares, máximo 4 pares</p>
+                        <div class="matchingPairs space-y-3">
+                            ${[1, 2, 3].map(i => `
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Enunciado ${i} *</label>
+                                        <input type="text" class="statement${i} w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Respuesta Correcta ${i} *</label>
+                                        <input type="text" class="match${i} w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <div class="grid grid-cols-2 gap-3 optionalPair">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Enunciado 4 (opcional)</label>
+                                    <input type="text" class="statement4 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Respuesta Correcta 4 (opcional)</label>
+                                    <input type="text" class="match4 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('createCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // curso diego
+            const courseData = {
+                title: document.getElementById('courseName').value,
+                description: document.getElementById('courseDescription').value,
+                level: document.getElementById('courseLevel').value,
+                duration_approx: document.getElementById('courseDuration').value,
+                category: document.getElementById('courseCategory').value,
+                video_url: document.getElementById('courseVideoUrl').value,
+                published: true
+            };
+            
+            // quiz diego
+            const questions = [];
+            const questionDivs = document.querySelectorAll('#questionsContainer > div');
+            
+            for (const qDiv of questionDivs) {
+                const type = qDiv.querySelector('.questionType').value;
+                const text = qDiv.querySelector('.questionText').value;
+                
+                if (!type || !text) {
+                    alert('Por favor completa todas las preguntas');
+                    return;
+                }
+                
+                const question = {
+                    type: type,
+                    text: text,
+                    options: {}
+                };
+                
+                const optionsContainer = qDiv.querySelector('.questionOptions');
+                
+                if (type === 'multiple_choice') {
+                    question.options.correct = optionsContainer.querySelector('.correctAnswer').value;
+                    question.options.wrong1 = optionsContainer.querySelector('.wrongAnswer1').value;
+                    question.options.wrong2 = optionsContainer.querySelector('.wrongAnswer2').value;
+                    question.options.wrong3 = optionsContainer.querySelector('.wrongAnswer3').value;
+                    
+                    if (!question.options.correct || !question.options.wrong1 || !question.options.wrong2 || !question.options.wrong3) {
+                        alert('Por favor completa todas las opciones de respuesta');
+                        return;
+                    }
+                } else if (type === 'true_false') {
+                    question.options.answer = optionsContainer.querySelector('.tfAnswer').value;
+                    if (!question.options.answer) {
+                        alert('Por favor selecciona la respuesta correcta');
+                        return;
+                    }
+                } else if (type === 'matching') {
+                    question.options.pairs = [];
+                    for (let i = 1; i <= 4; i++) {
+                        const statement = optionsContainer.querySelector(`.statement${i}`)?.value;
+                        const match = optionsContainer.querySelector(`.match${i}`)?.value;
+                        
+                        if (i <= 3 && (!statement || !match)) {
+                            alert('Por favor completa los primeros 3 pares de emparejamiento');
+                            return;
+                        }
+                        
+                        if (statement && match) {
+                            question.options.pairs.push({ statement, match });
+                        }
+                    }
+                }
+                
+                questions.push(question);
+            }
+            
+            if (questions.length === 0) {
+                alert('Debe haber al menos 1 pregunta');
+                return;
+            }
+            
+            courseData.questions = questions;
+            
+            try {
+                const response = await fetch('/api/courses/create-with-quiz', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(courseData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Curso creado exitosamente');
+                    document.getElementById('createCourseModal').classList.remove('active');
+                    document.getElementById('createCourseForm').reset();
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo crear el curso'));
+                }
+            } catch (error) {
+                console.error('[v0] Error creating course:', error);
+                alert('Error al crear el curso');
+            }
+        });
+
+        window.assignCourse = async function(courseId, courseTitle) {
+            document.getElementById('assignCourseId').value = courseId;
+            document.getElementById('assignCourseModal').classList.add('active');
+            
+            try {
+                const response = await fetch('/api/users/students', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                displayStudentsList(data.students, courseId);
+            } catch (error) {
+                console.error('[v0] Error loading students:', error);
+                document.getElementById('studentsList').innerHTML = '<p class="text-red-500">Error al cargar estudiantes</p>';
+            }
+        };
+
+        function displayStudentsList(students, courseId) {
+            const studentsList = document.getElementById('studentsList');
+            
+            if (students.length === 0) {
+                studentsList.innerHTML = '<p class="text-gray-500">No hay estudiantes disponibles</p>';
+                return;
+            }
+            
+            studentsList.innerHTML = students.map(student => `
+                <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <div>
+                        <p class="font-medium text-gray-800">${student.first_name} ${student.last_name}</p>
+                        <p class="text-sm text-gray-500">${student.email}</p>
+                    </div>
+                    <button onclick="assignToStudent(${courseId}, ${student.id}, '${student.first_name} ${student.last_name}')" 
+                            class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition">
+                        Asignar
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        window.assignToStudent = async function(courseId, studentId, studentName) {
+            if (!confirm(`¿Asignar este curso a ${studentName}?`)) return;
+            
+            try {
+                const response = await fetch('/api/courses/assign', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ course_id: courseId, student_id: studentId })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Curso asignado exitosamente');
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo asignar el curso'));
+                }
+            } catch (error) {
+                console.error('[v0] Error assigning course:', error);
+                alert('Error al asignar el curso');
+            }
+        };
+
+        window.editCourse = async function(courseId) {
+            try {
+                const categoriesResponse = await fetch('/api/categories/all', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!categoriesResponse.ok) throw new Error('Failed to load categories');
+                const categoriesData = await categoriesResponse.json();
+                const categories = categoriesData.categories;
+                
+                const response = await fetch(`/api/courses/${courseId}/full`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load course');
+                
+                const data = await response.json();
+                const course = data.course;
+                
+                document.getElementById('editCourseId').value = courseId;
+                document.getElementById('editCourseName').value = course.title;
+                document.getElementById('editCourseDescription').value = course.description;
+                document.getElementById('editCourseLevel').value = course.level || 'Principiante';
+                document.getElementById('editCourseDuration').value = course.duration_approx || '';
+                document.getElementById('editCourseVideoUrl').value = course.video_url || '';
+                
+                const categorySelect = document.getElementById('editCourseCategory');
+                categorySelect.innerHTML = '<option value="">Selecciona una categoría...</option>';
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.name;
+                    option.textContent = cat.name;
+                    option.dataset.categoryId = cat.id;
+                    if (course.category === cat.name || course.category_id === cat.id) {
+                        option.selected = true;
+                    }
+                    categorySelect.appendChild(option);
+                });
+                
+                document.getElementById('editCourseModal').classList.add('active');
+            } catch (error) {
+                console.error('Error loading course:', error);
+                alert('Error al cargar el curso. Por favor intenta de nuevo.');
+            }
+        };
+
+        document.getElementById('editCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const courseId = document.getElementById('editCourseId').value;
+            const categorySelect = document.getElementById('editCourseCategory');
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            
+            const courseData = {
+                title: document.getElementById('editCourseName').value,
+                description: document.getElementById('editCourseDescription').value,
+                category: categorySelect.value, // Sending category name
+                category_id: selectedOption.dataset.categoryId ? parseInt(selectedOption.dataset.categoryId) : null,
+                level: document.getElementById('editCourseLevel').value,
+                duration_approx: document.getElementById('editCourseDuration').value,
+                video_url: document.getElementById('editCourseVideoUrl').value
+            };
+            
+            try {
+                const response = await fetch(`/api/courses/${courseId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(courseData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Curso actualizado exitosamente');
+                    document.getElementById('editCourseModal').classList.remove('active');
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo actualizar el curso'));
+                }
+            } catch (error) {
+                console.error('[v0] Error updating course:', error);
+                alert('Error al actualizar el curso');
+            }
+        });
+
+        window.deleteCourse = async function(courseId, courseTitle) {
+            if (!confirm(`¿Estás seguro de que deseas borrar el curso "${courseTitle}"? Esta acción no se puede deshacer y lo eliminará de todos los estudiantes asignados.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/courses/${courseId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Curso eliminado exitosamente');
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + (result.error || 'No se pudo eliminar el curso'));
+                }
+            } catch (error) {
+                console.error('[v0] Error deleting course:', error);
+                alert('Error al eliminar el curso');
+            }
+        };
+
+        window.viewEnrolledStudents = async function(courseId, courseTitle) {
+            document.getElementById('enrolledCourseTitle').textContent = courseTitle;
+            document.getElementById('enrolledStudentsModal').classList.add('active');
+            
+            try {
+                const response = await fetch(`/api/instructor/course/${courseId}/detail`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load enrolled students');
+                
+                const data = await response.json();
+                displayEnrolledStudents(data.students, data.stats);
+            } catch (error) {
+                console.error('[v0] Error loading enrolled students:', error);
+                document.getElementById('enrolledStudentsList').innerHTML = 
+                    '<p class="text-red-500">Error al cargar estudiantes inscritos</p>';
+            }
+        };
+
+        function displayEnrolledStudents(students, stats) {
+            const studentsList = document.getElementById('enrolledStudentsList');
+            
+            if (students.length === 0) {
+                studentsList.innerHTML = '<p class="text-gray-500">No hay estudiantes inscritos en este curso.</p>';
+                return;
+            }
+
+            const statsHtml = `
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-xs text-gray-600">Total Inscritos</p>
+                            <p class="text-2xl font-bold text-blue-600">${stats.totalEnrolled}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600">Aprobados</p>
+                            <p class="text-2xl font-bold text-green-600">${stats.totalPassed}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600">Promedio Calificación</p>
+                            <p class="text-2xl font-bold text-purple-600">${stats.averageScore}%</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const studentsHtml = students.map(student => {
+                const statusBadge = student.passed 
+                    ? '<span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800">Aprobado</span>'
+                    : '<span class="px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-800">En Progreso</span>';
+                
+                const scoreDisplay = student.score !== null ? `${student.score.toFixed(1)}%` : 'N/A';
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <p class="font-semibold text-gray-800">${student.first_name} ${student.last_name}</p>
+                                <p class="text-xs text-gray-500">${student.email}</p>
+                                <p class="text-xs text-gray-500">ID: ${student.employee_id}</p>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1 mt-3">
+                            <p>Calificación: <span class="font-semibold">${scoreDisplay}</span></p>
+                            <p>Progreso: <span class="font-semibold">${student.progress || 0}%</span></p>
+                            <p>Inscrito: ${new Date(student.enrolled_at).toLocaleDateString('es-ES')}</p>
+                            ${student.passed && student.completed_at ? `<p>Completado: ${new Date(student.completed_at).toLocaleDateString('es-ES')}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            studentsList.innerHTML = statsHtml + studentsHtml;
+        }
+
+        document.getElementById('searchStudents')?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const students = document.querySelectorAll('#studentsList > div');
+            
+            students.forEach(student => {
+                const text = student.textContent.toLowerCase();
+                student.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/dashboard/instructor', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load dashboard');
+
+                const data = await response.json();
+                displayCourses(data.courses);
+            } catch (error) {
+                console.error('[v0] Error loading dashboard:', error);
+                document.getElementById('coursesList').innerHTML = 
+                    '<p class="text-red-500">Error al cargar los cursos. Verifica tu conexión.</p>';
+            }
+        }
+
+        function displayCourses(courses) {
+            const coursesList = document.getElementById('coursesList');
+            
+            if (courses.length === 0) {
+                coursesList.innerHTML = '<p class="text-gray-500">No tienes cursos asignados todavía.</p>';
+                return;
+            }
+
+            coursesList.innerHTML = courses.map(course => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg text-gray-800">${course.title}</h3>
+                            <p class="text-sm text-gray-600 mt-1">${course.description || 'Sin descripción'}</p>
+                        </div>
+                        <span class="ml-4 px-3 py-1 rounded-full text-xs font-semibold ${
+                            course.is_published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }">
+                            ${course.is_published ? 'Publicado' : 'Borrador'}
+                        </span>
+                    </div>
+                    <div class="mt-3 flex items-center gap-4 text-sm text-gray-600">
+                        <span>👥 ${course.enrolled_students} estudiantes</span>
+                        <span>⏱️ ${course.duration_hours || course.duration_approx || 'N/A'}</span>
+                        <span>📊 ${course.difficulty_level || course.level || 'N/A'}</span>
+                        <!-- Fixed category display to show updated category value -->
+                        <span>📂 ${course.category || 'Sin categoría'}</span>
+                    </div>
+                    <!-- Added action buttons -->
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="viewEnrolledStudents(${course.id}, '${course.title}')" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition">
+                            Estudiantes Inscritos
+                        </button>
+                        <button onclick="assignCourse(${course.id}, '${course.title}')" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition">
+                            Asignar Curso
+                        </button>
+                        <button onclick="editCourse(${course.id})" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition">
+                            Editar
+                        </button>
+                        <button onclick="deleteCourse(${course.id}, '${course.title}')" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition">
+                            Borrar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadDashboard();
+    </script>
+    <script src="js/authState.js"></script>
+</body>
+</html>

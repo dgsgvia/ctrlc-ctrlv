@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación - Learning UT</title>
+    <link rel="stylesheet" href="/index.css">
+    <style>
+        .quiz-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .quiz-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .quiz-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #111827;
+        }
+
+        .quiz-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .timer-container {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .timer {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #b45309;
+        }
+
+        .timer.warning {
+            color: #dc2626;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .question-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .question-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .question-points {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .question-text {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #111827;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .choice-option:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .choice-option.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .choice-option input[type="radio"],
+        .choice-option input[type="checkbox"] {
+            margin-right: 0.75rem;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .choice-label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .short-answer-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .short-answer-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .submit-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .submit-button {
+            padding: 1rem 3rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-button:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        .submit-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .progress-bar-container {
+            background: #e5e7eb;
+            height: 6px;
+            border-radius: 3px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #2563eb;
+            transition: width 0.3s ease;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            font-size: 1.125rem;
+            color: #6b7280;
+        }
+
+        .feedback {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .feedback.correct {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .feedback.incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div id="quizContent">
+            <div class="loading">Cargando evaluación...</div>
+        </div>
+    </div>
+
+    <script>
+        let quiz = null;
+        let questions = [];
+        let attemptId = null;
+        let timerInterval = null;
+        let timeRemaining = 0;
+        let submitting = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const quizId = window.location.pathname.split('/').pop();
+            loadQuiz(quizId);
+        });
+
+        async function loadQuiz(quizId) {
+            const container = document.getElementById('quizContent');
+
+            try {
+                const token = getCookie('token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const [quizResponse, attemptResponse] = await Promise.all([
+                    fetch(`/api/quizzes/${quizId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch(`/api/quizzes/${quizId}/attempt`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                ]);
+
+                if (!quizResponse.ok || !attemptResponse.ok) {
+                    throw new Error('No se pudo cargar la evaluación');
+                }
+
+                const quizData = await quizResponse.json();
+                const attemptData = await attemptResponse.json();
+
+                quiz = quizData.quiz;
+                questions = quizData.questions;
+                attemptId = attemptData.attemptId;
+                timeRemaining = attemptData.timeLimit * 60;
+
+                renderQuiz();
+                startTimer();
+            } catch (error) {
+                console.error('Error loading quiz:', error);
+                container.innerHTML = `
+                    <div class="loading">
+                        <h2>Error al cargar la evaluación</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContent');
+
+            const questionsHTML = questions.map((q, index) => {
+                let choicesHTML = '';
+
+                if (q.question_type === 'multiple_choice' || q.question_type === 'true_false') {
+                    choicesHTML = q.choices.map(choice => `
+                        <label class="choice-option" onclick="selectChoice(${q.id}, ${choice.id})">
+                            <input type="radio" name="question_${q.id}" value="${choice.id}" onchange="saveAnswer(${q.id}, ${choice.id})">
+                            <span class="choice-label">${choice.choice_text}</span>
+                        </label>
+                    `).join('');
+                } else if (q.question_type === 'multiple_select') {
+                    choicesHTML = q.choices.map(choice => `
+                        <label class="choice-option" onclick="toggleChoice(${q.id}, ${choice.id})">
+                            <input type="checkbox" name="question_${q.id}" value="${choice.id}" onchange="saveMultipleAnswer(${q.id})">
+                            <span class="choice-label">${choice.choice_text}</span>
+                        </label>
+                    `).join('');
+                } else if (q.question_type === 'short_answer') {
+                    choicesHTML = `
+                        <input type="text" class="short-answer-input" id="answer_${q.id}" 
+                               placeholder="Escribe tu respuesta aquí..."
+                               onchange="saveShortAnswer(${q.id})">
+                    `;
+                }
+
+                return `
+                    <div class="question-card" id="question_${q.id}">
+                        <div class="question-header">
+                            <span class="question-number">Pregunta ${index + 1} de ${questions.length}</span>
+                            <span class="question-points">${q.points} punto${q.points > 1 ? 's' : ''}</span>
+                        </div>
+                        <div class="question-text">${q.question_text}</div>
+                        <div class="choices-container">
+                            ${choicesHTML}
+                        </div>
+                        <div id="feedback_${q.id}"></div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="quiz-header">
+                    <h1 class="quiz-title">${quiz.title}</h1>
+                    <p>${quiz.description}</p>
+                    <div class="quiz-meta">
+                        <span>${questions.length} preguntas</span>
+                        <span>Puntaje mínimo: ${quiz.passing_score}%</span>
+                        <span>Intentos disponibles: ${quiz.max_attempts}</span>
+                    </div>
+                </div>
+
+                <div class="timer-container">
+                    <div>Tiempo restante</div>
+                    <div class="timer" id="timer">00:00</div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+
+                ${questionsHTML}
+
+                <div class="submit-container">
+                    <button class="submit-button" onclick="submitQuiz()" id="submitButton">
+                        Enviar evaluación
+                    </button>
+                </div>
+            `;
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Se acabó el tiempo. La evaluación se enviará automáticamente.');
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const timerElement = document.getElementById('timer');
+
+            if (timerElement) {
+                timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                if (timeRemaining <= 300) {
+                    timerElement.classList.add('warning');
+                }
+            }
+        }
+
+        function selectChoice(questionId, choiceId) {
+            const options = document.querySelectorAll(`input[name="question_${questionId}"]`);
+            options.forEach(opt => {
+                opt.closest('.choice-option').classList.remove('selected');
+            });
+
+            const selected = document.querySelector(`input[name="question_${questionId}"][value="${choiceId}"]`);
+            if (selected) {
+                selected.closest('.choice-option').classList.add('selected');
+            }
+
+            updateProgress();
+        }
+
+        function toggleChoice(questionId, choiceId) {
+            const checkbox = document.querySelector(`input[name="question_${questionId}"][value="${choiceId}"]`);
+            if (checkbox) {
+                const option = checkbox.closest('.choice-option');
+                if (checkbox.checked) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            }
+
+            updateProgress();
+        }
+
+        async function saveAnswer(questionId, choiceId) {
+            try {
+                const token = getCookie('token');
+                await fetch(`/api/quizzes/${quiz.id}/attempt/${attemptId}/answer`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question_id: questionId,
+                        choice_id: choiceId
+                    })
+                });
+            } catch (error) {
+                console.error('Error saving answer:', error);
+            }
+        }
+
+        async function saveMultipleAnswer(questionId) {
+            try {
+                const checkboxes = document.querySelectorAll(`input[name="question_${questionId}"]:checked`);
+                const selectedChoices = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+                const token = getCookie('token');
+                await fetch(`/api/quizzes/${quiz.id}/attempt/${attemptId}/answer`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question_id: questionId,
+                        selected_choices: JSON.stringify(selectedChoices)
+                    })
+                });
+            } catch (error) {
+                console.error('Error saving answer:', error);
+            }
+        }
+
+        async function saveShortAnswer(questionId) {
+            try {
+                const input = document.getElementById(`answer_${questionId}`);
+                const answerText = input.value.trim();
+
+                if (!answerText) return;
+
+                const token = getCookie('token');
+                await fetch(`/api/quizzes/${quiz.id}/attempt/${attemptId}/answer`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question_id: questionId,
+                        answer_text: answerText
+                    })
+                });
+
+                updateProgress();
+            } catch (error) {
+                console.error('Error saving answer:', error);
+            }
+        }
+
+        function updateProgress() {
+            let answered = 0;
+
+            questions.forEach(q => {
+                if (q.question_type === 'multiple_choice' || q.question_type === 'true_false') {
+                    const selected = document.querySelector(`input[name="question_${q.id}"]:checked`);
+                    if (selected) answered++;
+                } else if (q.question_type === 'multiple_select') {
+                    const selected = document.querySelectorAll(`input[name="question_${q.id}"]:checked`);
+                    if (selected.length > 0) answered++;
+                } else if (q.question_type === 'short_answer') {
+                    const input = document.getElementById(`answer_${q.id}`);
+                    if (input && input.value.trim()) answered++;
+                }
+            });
+
+            const progress = (answered / questions.length) * 100;
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+            }
+        }
+
+        async function submitQuiz() {
+            if (submitting) return;
+
+            if (!confirm('¿Estás seguro de que deseas enviar la evaluación? No podrás cambiar tus respuestas después.')) {
+                return;
+            }
+
+            submitting = true;
+            const submitButton = document.getElementById('submitButton');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Enviando...';
+            }
+
+            clearInterval(timerInterval);
+
+            try {
+                const token = getCookie('token');
+                const response = await fetch(`/api/quizzes/${quiz.id}/attempt/${attemptId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    window.location.href = `/quizzes/${quiz.id}/results/${attemptId}`;
+                } else {
+                    throw new Error('Error al enviar la evaluación');
+                }
+            } catch (error) {
+                console.error('Error submitting quiz:', error);
+                alert('Error al enviar la evaluación. Por favor, intenta nuevamente.');
+                submitting = false;
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Enviar evaluación';
+                }
+            }
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        window.addEventListener('beforeunload', (e) => {
+            if (!submitting) {
+                e.preventDefault();
+                e.returnValue = 'Tienes una evaluación en progreso. ¿Estás seguro de que deseas salir?';
+            }
+        });
+    </script>
+    <script src="js/authState.js"></script>
+</body>
+</html>

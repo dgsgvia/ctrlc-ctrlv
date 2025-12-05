@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados de Evaluación - Learning UT</title>
+    <link rel="stylesheet" href="/index.css">
+    <style>
+        .results-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .results-header {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .results-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #111827;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .score-circle.passed {
+            background: #dcfce7;
+            color: #166534;
+            border: 4px solid #22c55e;
+        }
+
+        .score-circle.failed {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 4px solid #ef4444;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .status-badge.passed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .answers-section {
+            margin-top: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #111827;
+        }
+
+        .answer-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .answer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .answer-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .answer-status.correct {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .answer-status.incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .question-text {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .answer-detail {
+            font-size: 0.875rem;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .answer-detail strong {
+            color: #111827;
+        }
+
+        .explanation-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            border-radius: 4px;
+        }
+
+        .explanation-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        .explanation-text {
+            font-size: 0.875rem;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .actions-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .action-button {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-button.primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .action-button.primary:hover {
+            background: #1d4ed8;
+        }
+
+        .action-button.secondary {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .action-button.secondary:hover {
+            background: #f3f4f6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            font-size: 1.125rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="results-container">
+        <div id="resultsContent">
+            <div class="loading">Cargando resultados...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const pathParts = window.location.pathname.split('/');
+            const quizId = pathParts[2];
+            const attemptId = pathParts[4];
+            loadResults(quizId, attemptId);
+        });
+
+        async function loadResults(quizId, attemptId) {
+            const container = document.getElementById('resultsContent');
+
+            try {
+                const token = getCookie('token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch(`/api/quizzes/${quizId}/attempt/${attemptId}/results`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los resultados');
+                }
+
+                const data = await response.json();
+                renderResults(data);
+            } catch (error) {
+                console.error('Error loading results:', error);
+                container.innerHTML = `
+                    <div class="loading">
+                        <h2>Error al cargar los resultados</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderResults(data) {
+            const { attempt, answers } = data;
+            const container = document.getElementById('resultsContent');
+
+            const passed = attempt.passed;
+            const scoreClass = passed ? 'passed' : 'failed';
+            const statusText = passed ? 'Aprobado' : 'No aprobado';
+
+            const timeSpent = formatTime(attempt.time_spent_seconds);
+            const correctAnswers = answers.filter(a => a.is_correct).length;
+
+            const answersHTML = answers.map((answer, index) => {
+                const statusClass = answer.is_correct ? 'correct' : 'incorrect';
+                const statusIcon = answer.is_correct ? '✓' : '✗';
+                const statusText = answer.is_correct ? 'Correcta' : 'Incorrecta';
+
+                let yourAnswerHTML = '';
+                if (answer.answer_text) {
+                    yourAnswerHTML = `<div class="answer-detail"><strong>Tu respuesta:</strong> ${answer.answer_text}</div>`;
+                } else if (answer.choice_id && answer.choices) {
+                    const selectedChoice = answer.choices.find(c => c.id === answer.choice_id);
+                    yourAnswerHTML = `<div class="answer-detail"><strong>Tu respuesta:</strong> ${selectedChoice ? selectedChoice.choice_text : 'N/A'}</div>`;
+                } else if (answer.selected_choices) {
+                    const selectedIds = JSON.parse(answer.selected_choices);
+                    const selectedTexts = answer.choices.filter(c => selectedIds.includes(c.id)).map(c => c.choice_text);
+                    yourAnswerHTML = `<div class="answer-detail"><strong>Tus respuestas:</strong> ${selectedTexts.join(', ')}</div>`;
+                }
+
+                let correctAnswerHTML = '';
+                if (attempt.show_correct_answers && answer.choices) {
+                    const correctChoices = answer.choices.filter(c => c.is_correct);
+                    if (correctChoices.length > 0) {
+                        correctAnswerHTML = `<div class="answer-detail" style="color: #166534;"><strong>Respuesta correcta:</strong> ${correctChoices.map(c => c.choice_text).join(', ')}</div>`;
+                    }
+                }
+
+                let explanationHTML = '';
+                if (answer.explanation && attempt.show_correct_answers) {
+                    explanationHTML = `
+                        <div class="explanation-box">
+                            <div class="explanation-label">Explicación</div>
+                            <div class="explanation-text">${answer.explanation}</div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="answer-card">
+                        <div class="answer-header">
+                            <span style="font-weight: 600; color: #6b7280;">Pregunta ${index + 1}</span>
+                            <span class="answer-status ${statusClass}">${statusIcon} ${statusText}</span>
+                        </div>
+                        <div class="question-text">${answer.question_text}</div>
+                        ${yourAnswerHTML}
+                        ${correctAnswerHTML}
+                        <div class="answer-detail"><strong>Puntos obtenidos:</strong> ${answer.points_earned} / ${answer.question_points}</div>
+                        ${explanationHTML}
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="results-header">
+                    <h1 class="results-title">Resultados de la Evaluación</h1>
+                    
+                    <div class="score-display">
+                        <div class="score-circle ${scoreClass}">
+                            ${Math.round(attempt.score)}%
+                        </div>
+                        <div style="text-align: left;">
+                            <div class="status-badge ${scoreClass}">${statusText}</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value">${Math.round(attempt.score)}%</span>
+                            <span class="stat-label">Calificación</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">${correctAnswers}/${answers.length}</span>
+                            <span class="stat-label">Correctas</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">${timeSpent}</span>
+                            <span class="stat-label">Tiempo</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">${attempt.attempt_number}</span>
+                            <span class="stat-label">Intento</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${attempt.show_correct_answers ? `
+                    <div class="answers-section">
+                        <h2 class="section-title">Revisión de respuestas</h2>
+                        ${answersHTML}
+                    </div>
+                ` : ''}
+
+                <div class="actions-container">
+                    <button class="action-button secondary" onclick="window.location.href='/courses'">
+                        Volver a cursos
+                    </button>
+                </div>
+            `;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+    </script>
+    <script src="js/authState.js"></script>
+</body>
+</html>

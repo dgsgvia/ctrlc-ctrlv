@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso | Learning UT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script src="https://unpkg.com/@videojs/http-streaming@3.13.4/dist/videojs-http-streaming.min.js"></script>
+    <script src="https://unpkg.com/videojs-youtube@3.0.1/dist/Youtube.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .video-js {
+            width: 100%;
+            height: 500px;
+        }
+        .video-js .vjs-big-play-button {
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+            position: relative;
+        }
+        
+        .modal-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .modal-gradient.confirm {
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+        }
+        
+        .modal-gradient.success {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+        
+        .modal-gradient.error {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+        
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-icon.confirm {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+        }
+        
+        .modal-icon.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .modal-icon.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .modal-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-button:active {
+            transform: scale(0.98);
+        }
+        
+        .modal-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .modal-button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/dashboard/student" class="flex items-center">
+                        <img src="/Logo.jpg" alt="Logo" class="h-10 w-10 rounded-full">
+                        <span class="ml-3 text-xl font-bold text-gray-800">Learning UT</span>
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/dashboard/student" class="text-gray-600 hover:text-purple-600 font-medium">Volver al Dashboard</a>
+                    <span id="userName" class="text-gray-700 font-medium"></span>
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="courseContent" class="space-y-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h1 id="courseTitle" class="text-3xl font-bold text-gray-900 mb-2">Cargando curso...</h1>
+                <p id="courseDescription" class="text-gray-600 mb-6"></p>
+                <div id="videoSection" class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Video del Curso</h2>
+                    <div class="bg-black rounded-lg overflow-hidden">
+                        <video id="courseVideo" class="video-js vjs-big-play-centered" controls preload="auto">
+                            <p class="vjs-no-js">
+                                Para ver este video, por favor habilita JavaScript y considera actualizar a un navegador que
+                                <a href="https://videojs.com/html5-video-support/" target="_blank">soporte video HTML5</a>
+                            </p>
+                        </video>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <button id="videoCompleteBtn" disabled class="px-6 py-3 bg-gray-300 text-gray-500 rounded-lg font-semibold cursor-not-allowed">
+                            Ver el video completo para continuar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quiz Section -->
+                <div id="quizSection" class="hidden">
+                    <div class="border-t border-gray-200 pt-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Evaluación del Curso</h2>
+                        <p class="text-gray-600 mb-6">Responde todas las preguntas para completar el curso. Necesitas obtener al menos 70% para aprobar.</p>
+                        
+                        <form id="quizForm" class="space-y-6">
+                            <div id="questionsContainer" class="space-y-8">
+                            </div>
+                            
+                            <div class="flex justify-end">
+                                <button type="submit" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition">
+                                    Terminar Quiz
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Result Modal -->
+    <div id="resultModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h2 id="resultTitle" class="text-2xl font-bold text-gray-900 mb-4"></h2>
+            <p id="resultMessage" class="text-gray-700 mb-2"></p>
+            <p id="resultScore" class="text-3xl font-bold text-purple-600 mb-6"></p>
+            <div id="resultActions" class="flex gap-4">
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showCustomAlert(message, type = 'success') {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                
+                const iconSVG = type === 'success' 
+                    ? '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
+                    : '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+                
+                overlay.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-gradient ${type}"></div>
+                        <div class="modal-icon ${type}">
+                            ${iconSVG}
+                        </div>
+                        <p class="text-gray-700 text-center mb-6 text-base leading-relaxed">${message}</p>
+                        <button class="modal-button w-full py-3 px-4 rounded-lg font-semibold text-white transition ${type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'}">
+                            Aceptar
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(overlay);
+                
+                const button = overlay.querySelector('button');
+                button.addEventListener('click', () => {
+                    overlay.remove();
+                    resolve();
+                });
+                
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                        resolve();
+                    }
+                });
+            });
+        }
+        
+        function showCustomConfirm(message) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                
+                overlay.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-gradient confirm"></div>
+                        <div class="modal-icon confirm">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-700 text-center mb-6 text-base leading-relaxed">${message}</p>
+                        <div class="flex gap-3">
+                            <button class="modal-button flex-1 py-3 px-4 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition" data-action="cancel">
+                                Cancelar
+                            </button>
+                            <button class="modal-button flex-1 py-3 px-4 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition" data-action="confirm">
+                                Confirmar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(overlay);
+                
+                const buttons = overlay.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const action = button.getAttribute('data-action');
+                        overlay.remove();
+                        resolve(action === 'confirm');
+                    });
+                });
+                
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                        resolve(false);
+                    }
+                });
+            });
+        }
+        
+        const token = localStorage.getItem('token');
+        const userRole = localStorage.getItem('userRole');
+        
+        if (!token || (userRole !== 'student' && userRole !== 'admin')) {
+            window.location.href = '/login';
+        }
+
+        document.getElementById('userName').textContent = localStorage.getItem('userName') || 'Usuario';
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.clear();
+            window.location.href = '/login';
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id');
+
+        if (!courseId) {
+            showCustomAlert('ID de curso no especificado', 'error').then(() => {
+                window.location.href = '/dashboard/student';
+            });
+        }
+
+        let player = null;
+        let quizId = null;
+        let attemptId = null;
+        let questions = [];
+        let videoWatched = false;
+
+        function extractYouTubeId(url) {
+            if (!url) return null;
+            
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+                /youtube\.com\/embed\/([^&\s]+)/,
+                /youtube\.com\/v\/([^&\s]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+            
+            return null;
+        }
+
+        async function loadCourse() {
+            try {
+                const response = await fetch(`/api/courses/${courseId}/full`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load course');
+
+                const data = await response.json();
+                const course = data.course;
+                
+                document.getElementById('courseTitle').textContent = course.title;
+                document.getElementById('courseDescription').textContent = course.description;
+                
+                if (course.video_url || course.video_manifest) {
+                    const videoUrl = course.video_url || course.video_manifest;
+                    const youtubeId = extractYouTubeId(videoUrl);
+                    
+                    console.log('[v0] Video URL from DB:', videoUrl);
+                    console.log('[v0] YouTube ID extracted:', youtubeId);
+                    
+                    if (youtubeId) {
+
+                        const existing = videojs.getPlayer('courseVideo');
+                        if (existing) {
+                            console.log('[fix] disposing existing player');
+                             existing.dispose();
+                        }
+
+                        player = videojs('courseVideo', {
+                            techOrder: ['youtube'],
+                            sources: [{
+                                type: 'video/youtube',
+                                src: `https://www.youtube.com/watch?v=${youtubeId}`
+                            }],
+                            youtube: {
+                                ytControls: 2,
+                                modestbranding: 1,
+                                rel: 0,
+                                showinfo: 0,
+                                iv_load_policy: 3
+                            }
+                        });
+                    } else {
+                        player = videojs('courseVideo', {
+                            techOrder: ['html5'],
+                            sources: [{
+                                type: 'video/mp4',
+                                src: videoUrl
+                            }]
+                        });
+                    }
+                    
+                    player.ready(function() {
+                        console.log('[v0] Player is ready');
+                    });
+
+                    player.on('ended', () => {
+                        console.log('[v0] Video ended');
+                        videoWatched = true;
+                        enableQuizButton();
+                    });
+                    
+                    player.on('timeupdate', () => {
+                        if (!player.duration() || videoWatched) return;
+                        
+                        const percent = (player.currentTime() / player.duration()) * 100;
+                        if (percent >= 90) {
+                            console.log('[v0] Video 90% watched');
+                            videoWatched = true;
+                            enableQuizButton();
+                        }
+                    });
+                    
+                    player.on('error', (e) => {
+                        console.error('[v0] Video player error:', e);
+                    });
+                }
+            
+                if (course.quiz) {
+                    quizId = course.quiz.id;
+                    await loadQuiz(quizId);
+                }
+                
+                await loadProgress();
+                
+            } catch (error) {
+                console.error('[v0] Error loading course:', error);
+                await showCustomAlert('Error al cargar el curso', 'error');
+                window.location.href = '/dashboard/student';
+            }
+        }
+        
+        function enableQuizButton() {
+            const btn = document.getElementById('videoCompleteBtn');
+            btn.disabled = false;
+            btn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+            btn.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white', 'cursor-pointer');
+            btn.textContent = 'Continuar al Quiz →';
+        }
+
+        async function loadQuiz(qId) {
+            try {
+                const response = await fetch(`/api/quizzes/${qId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load quiz');
+
+                const data = await response.json();
+                questions = data.questions;
+                displayQuestions(questions);
+                
+            } catch (error) {
+                console.error('[v0] Error loading quiz:', error);
+                document.getElementById('questionsContainer').innerHTML = 
+                    '<p class="text-red-500">Error al cargar el quiz</p>';
+            }
+        }
+
+        function displayQuestions(questions) {
+            const container = document.getElementById('questionsContainer');
+            
+            container.innerHTML = questions.map((q, index) => {
+                let optionsHTML = '';
+                
+                if (q.question_type === 'multiple_choice' || q.question_type === 'true_false') {
+                    optionsHTML = q.choices.map(choice => `
+                        <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer transition">
+                            <input type="radio" name="question_${q.id}" value="${choice.id}" required class="mt-1 mr-3">
+                            <span class="flex-1">${choice.choice_text}</span>
+                        </label>
+                    `).join('');
+                } else if (q.question_type === 'matching') {
+                    optionsHTML = '<p class="text-sm text-gray-600 mb-3">Empareja los enunciados con sus respuestas correctas:</p>';
+                    optionsHTML += '<div class="space-y-3" id="matching_' + q.id + '"></div>';
+                    loadMatchingPairs(q.id);
+                }
+                
+                return `
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-start gap-3 mb-4">
+                            <span class="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                                ${index + 1}
+                            </span>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">${q.question_text}</p>
+                                ${q.question_type === 'matching' ? 
+                                    '<p class="text-xs text-gray-500 mt-1">Tipo: Emparejamiento</p>' : 
+                                    ''}
+                            </div>
+                        </div>
+                        <div class="space-y-2 ml-11">
+                            ${optionsHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadMatchingPairs(questionId) {
+            try {
+                const response = await fetch(`/api/questions/${questionId}/matching-pairs`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load matching pairs');
+
+                const data = await response.json();
+                const pairs = data.pairs;
+                
+                const shuffledMatches = [...pairs.map(p => p.correct_match)].sort(() => Math.random() - 0.5);
+                
+                const container = document.getElementById('matching_' + questionId);
+                container.innerHTML = pairs.map((pair, index) => `
+                    <div class="grid grid-cols-2 gap-4 items-center">
+                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-300">
+                            <p class="text-sm font-medium">${pair.statement}</p>
+                        </div>
+                        <select name="matching_${questionId}_${pair.id}" required 
+                                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <option value="">Selecciona una respuesta...</option>
+                            ${shuffledMatches.map(match => `
+                                <option value="${match}">${match}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                `).join('');
+                
+                window['matching_' + questionId + '_correct'] = pairs.reduce((acc, pair) => {
+                    acc[pair.id] = pair.correct_match;
+                    return acc;
+                }, {});
+                
+            } catch (error) {
+                console.error('[v0] Error loading matching pairs:', error);
+            }
+        }
+
+        async function loadProgress() {
+            try {
+                const response = await fetch(`/api/courses/${courseId}/progress`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (data.course) {
+                    const progress = Math.round(data.course.progress_percentage || 0);
+                    document.getElementById('progressText').textContent = progress + '%';
+                    document.getElementById('progressBar').style.width = progress + '%';
+                    
+                    if (data.course.status === 'completed') {
+                        document.getElementById('videoCompleteBtn').textContent = 'Curso Completado ✓';
+                        document.getElementById('videoCompleteBtn').classList.add('bg-green-600');
+                    }
+                }
+            } catch (error) {
+                console.error('[v0] Error loading progress:', error);
+            }
+        }
+
+        document.getElementById('videoCompleteBtn').addEventListener('click', () => {
+            if (videoWatched) {
+                document.getElementById('quizSection').classList.remove('hidden');
+                document.getElementById('quizSection').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        document.getElementById('quizForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const confirmed = await showCustomConfirm('¿Estás seguro de que deseas enviar el quiz? No podrás cambiar tus respuestas.');
+            if (!confirmed) {
+                return;
+            }
+            
+            try {
+                const attemptResponse = await fetch(`/api/quizzes/${quizId}/attempt`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const attemptData = await attemptResponse.json();
+                attemptId = attemptData.attemptId;
+                
+                let correctCount = 0;
+                let totalQuestions = questions.length;
+                
+                for (const question of questions) {
+                    if (question.question_type === 'multiple_choice' || question.question_type === 'true_false') {
+                        const selectedChoice = document.querySelector(`input[name="question_${question.id}"]:checked`);
+                        if (selectedChoice) {
+                            const answerResponse = await fetch(`/api/quizzes/${quizId}/attempt/${attemptId}/answer`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                    question_id: question.id,
+                                    choice_id: parseInt(selectedChoice.value)
+                                })
+                            });
+                            
+                            const answerData = await answerResponse.json();
+                            if (answerData.isCorrect) {
+                                correctCount++;
+                            }
+                        }
+                    } else if (question.question_type === 'matching') {
+                        const correctMatches = window['matching_' + question.id + '_correct'];
+                        let allCorrect = true;
+                        
+                        for (const pairId in correctMatches) {
+                            const selectedMatch = document.querySelector(`select[name="matching_${question.id}_${pairId}"]`).value;
+                            if (selectedMatch !== correctMatches[pairId]) {
+                                allCorrect = false;
+                                break;
+                            }
+                        }
+                        
+                        if (allCorrect) {
+                            correctCount++;
+                        }
+                        
+                        const answerResponse = await fetch(`/api/quizzes/${quizId}/attempt/${attemptId}/answer`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                question_id: question.id,
+                                is_correct: allCorrect
+                            })
+                        });
+                    }
+                }
+                
+                const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
+                const passed = scorePercentage >= 70;
+                
+                const completeResponse = await fetch(`/api/quizzes/${quizId}/attempt/${attemptId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        score: scorePercentage,
+                        passed: passed
+                    })
+                });
+                
+                showResults(scorePercentage, passed, correctCount, totalQuestions);
+                
+            } catch (error) {
+                console.error('[v0] Error submitting quiz:', error);
+                await showCustomAlert('Error al enviar el quiz. Por favor intenta de nuevo.', 'error');
+            }
+        });
+
+        function showResults(score, passed, correct, total) {
+            const modal = document.getElementById('resultModal');
+            const title = document.getElementById('resultTitle');
+            const message = document.getElementById('resultMessage');
+            const scoreDisplay = document.getElementById('resultScore');
+            const actions = document.getElementById('resultActions');
+            
+            if (passed) {
+                title.textContent = '¡Felicitaciones! 🎉';
+                message.textContent = `Has aprobado el curso con ${correct} de ${total} respuestas correctas.`;
+                title.classList.add('text-green-600');
+                title.classList.remove('text-red-600');
+            } else {
+                title.textContent = 'No aprobaste esta vez';
+                message.textContent = `Obtuviste ${correct} de ${total} respuestas correctas. Necesitas al menos 70% para aprobar.`;
+                title.classList.add('text-red-600');
+                title.classList.remove('text-green-600');
+            }
+            
+            scoreDisplay.textContent = `${score}%`;
+            
+            actions.innerHTML = `
+                <button onclick="handleReturnToDashboard(${passed})" 
+                        class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition">
+                    Volver al Dashboard
+                </button>
+                ${!passed ? `
+                    <button onclick="window.location.reload()" 
+                            class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition">
+                        Reintentar
+                    </button>
+                ` : ''}
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        async function handleReturnToDashboard(passed) {
+            console.log('[v0] handleReturnToDashboard called with passed:', passed);
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('id');
+            const token = localStorage.getItem('token');
+            
+            console.log('[v0] Course ID:', courseId);
+            console.log('[v0] Token exists:', !!token);
+            
+            if (passed && courseId) {
+                try {
+                    const scoreText = document.getElementById('resultScore').textContent;
+                    const score = parseFloat(scoreText);
+                    
+                    console.log('[v0] Attempting to mark course as completed. Score:', score);
+                    
+                    const response = await fetch(`/api/student/course/${courseId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            score: score,
+                            passed: true
+                        })
+                    });
+                    
+                    console.log('[v0] Response status:', response.status);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('[v0] Error response:', errorData);
+                        throw new Error(errorData.error || 'Failed to update course completion');
+                    }
+                    
+                    const result = await response.json();
+                    console.log('[v0] Course marked as completed successfully:', result);
+                    
+                    window.location.href = '/dashboard-student.html';
+                    
+                } catch (error) {
+                    console.error('[v0] Error updating course completion:', error);
+                    await showCustomAlert('Hubo un error al marcar el curso como completado: ' + error.message + '. Serás redirigido al dashboard de todos modos.', 'error');
+                    window.location.href = '/dashboard-student.html';
+                }
+            } else {
+                window.location.href = '/dashboard-student.html';
+            }
+        }
+
+        loadCourse();
+    </script>
+    <script src="js/authState.js"></script>
+</body>
+</html>
